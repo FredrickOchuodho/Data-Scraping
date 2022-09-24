@@ -1,3 +1,3 @@
-# mydatapractic
+# Data Scraping Project
 Data handling techniques
-https://fredrickochuodho.github.io/mydatapractic/
+[The Data Scraping Project](https://fredrickochuodho.github.io/Data-Scraping)
