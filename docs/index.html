@@ -11,7 +11,7 @@
 
 
 
-<title>My Website</title>
+<title>Scrapping of tables from the Government portal</title>
 
 <script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -245,15 +245,12 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">My Website</a>
+      <a class="navbar-brand" href="index.html">Web Scraping</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
   <a href="index.html">Home</a>
-</li>
-<li>
-  <a href="about.html">About</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -267,22 +264,45 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">My Website</h1>
+<h1 class="title toc-ignore">Scrapping of tables from the Government
+portal</h1>
 
 </div>
 
 
-<p>Hello, Website!</p>
-<p>For more information about simple R Markdown websites, please read
-the documentation at <a
-href="https://bookdown.org/yihui/rmarkdown/rmarkdown-site.html"
-class="uri">https://bookdown.org/yihui/rmarkdown/rmarkdown-site.html</a>.</p>
-<p>Please also note that simple R Markdown sites are <em>not</em> based
-on <strong>blogdown</strong>. They are probably good for websites with
-only a few Rmd documents. For larger-scale and more sophisticated
-websites (such as blogs), you may want to use <strong>blogdown</strong>
-instead: <a href="https://github.com/rstudio/blogdown"
-class="uri">https://github.com/rstudio/blogdown</a>.</p>
+<div id="loading-required-packages" class="section level5">
+<h5>Loading Required Packages</h5>
+<pre class="r"><code>library(rvest)     #web scrap the the web
+library(tidyverse) # provides several avenues for data wrangling</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6     ✔ purrr   0.3.4
+## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
+## ✔ tidyr   1.2.0     ✔ stringr 1.4.1
+## ✔ readr   2.1.2     ✔ forcats 0.5.2
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter()         masks stats::filter()
+## ✖ readr::guess_encoding() masks rvest::guess_encoding()
+## ✖ dplyr::lag()            masks stats::lag()</code></pre>
+<pre class="r"><code>library(RSelenium) #activates selenium server
+library(netstat)   # finding unused ports
+library(data.table)#for the rbinding list functions</code></pre>
+<pre><code>## 
+## Attaching package: &#39;data.table&#39;
+## 
+## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     between, first, last
+## 
+## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     transpose</code></pre>
+</div>
+<div id="obtaining-the-yelp-url-to-initialize-the-web-scraping-process."
+class="section level5">
+<h5>Obtaining the YELP url to initialize the Web scraping process.</h5>
+<pre class="r"><code>url=&quot;https://salaries.texastribune.org/search/?q=department+of+safety&quot;
+page&lt;-read_html(url) #creating the page </code></pre>
+</div>
 
 
 

@@ -1,12 +1,11 @@
-name: "my-website"
+name: "Web Scarping"
 output_dir: "docs"
 navbar:
-  title: "My Website"
+  title: "Web Scraping"
   left:
     - text: "Home"
       href: index.html
-    - text: "About"
-      href: about.html
+    
 output:
   html_document:
     theme: spacelab
