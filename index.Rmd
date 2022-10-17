@@ -1,5 +1,5 @@
 ---
-title: "Scraping of [Tom Brady](https://www.pro-football-reference.com/players/B/BradTo00.htm) Match Information from the [pro football reference](www.pro-football-reference.com/) portal"
+title: "Scraping of [Tom Brady](https://www.pro-football-reference.com/players/B/BradTo00.htm) Match Information"
 ---
 
 ### Web Scraping of both Regular and Playoff Tables 
