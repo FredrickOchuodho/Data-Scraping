@@ -1,20 +1,159 @@
 ---
-title: "Scrapping of tables from the Government portal"
+title: "Scraping of [Tom Brady](https://www.pro-football-reference.com/players/B/BradTo00.htm) Match Information from the [pro football reference](www.pro-football-reference.com/) portal"
 ---
 
+### Web Scraping of both Regular and Playoff Tables 
 
-##### Loading Required Packages
-```{r }
-library(rvest)     #web scrap the the web
+#### Loading Required Packages
+The following are the two major R packages that are going to be used for both data scraping and data cleaning for the two tables - Regular and Playoff tables. 
+```{r message=FALSE}
+library(rvest)     # web scrape
 library(tidyverse) # provides several avenues for data wrangling
-library(RSelenium) #activates selenium server
-library(netstat)   # finding unused ports
-library(data.table)#for the rbinding list functions
 ```
 
-##### Obtaining the YELP url to initialize the Web scraping process.
+#### Obtaining the url to initialize the Web scraping process.
+In this case, the url for the pro-football reference are loaded into the R software
+and creating the web page that would enable the extraction of the elements of the page
+```{r message=FALSE}
+url="https://www.pro-football-reference.com/players/B/BradTo00/gamelog/"
+page<-url %>% 
+  read_html()#creating the page 
+```
+
+##### Getting the Stats regular season table
+Getting the statistics table "stats" of the regular season table then follows. Having created the web-page in the previous junk of code, I am going ahead to obtain the Stats table from the pro football page for a renown footballer Tom Brady.
 ```{r}
-url="https://salaries.texastribune.org/search/?q=department+of+safety"
-page<-read_html(url) #creating the page 
+stats=page %>% 
+  html_element(css="#stats") %>% 
+  html_table()   # Scraping the regular stats table
+glimpse(stats)   # Viewing the heading and the first two lines
+
+```
+The Stats regular table have some missing column names in the first lines since the [Stats Regular table](https://www.pro-football-reference.com/players/B/BradTo00.htm) have both headers and sub headers.
+
+
+##### Getting the Stats Playoffs season table
+Similar to the coding from the junk above of obtaining the Stats Regular table, we are able to get the stats table and viewing the outcome using the glimpse function 
+```{r}
+stats_playoffs=page %>% 
+  html_element(css="#stats_playoffs") %>% 
+  html_table()
+glimpse(stats_playoffs)  
+
+```
+Similarly, the Stats Playoffs table also have some missing column names in the first lines since the [Stats Playoffs table](https://www.pro-football-reference.com/players/B/BradTo00.htm) have both headers and sub headers.
+
+#### Checking the number of columns of the two tables
+```{r}
+ncol(stats)
+ncol(stats_playoffs)
+```
+So far there are two issues making our data set untidy. Even though the two data sets seems to be having similar structures, they bear different columns with different column names.
+
+###_Main Objective_
+*At the end of the data cleaning we should be able to combine the two data sets*
+
+### Data Cleaning
+To realize the above objective, the following activities shall be done:
+
+1. Combining the Column names first row to form the column name of the the two data sets by first cleaning the Stats Regular Data set.
+
+2. Removing all the empty columns from the Stats Regular Table.
+
+3. Removing all the column names in the stats table beginning "_".
+
+4. Removing unnecessary Rows and Columns:
+   _removing rows beginning with alphabets in Date Column_, _removing column that are empty_
+   
+5. Checking on the duplicated column names and assigning then "2" - the second instance to make them unique. 
+
+6. Replacing both the "*" in the GS column with the started the match
+
+7. Replacing the instances of empty in the GS column with 'Played but not started'
+
+8. Assign the columns after GS to with the string values present in GS to Zeros
+
+9. Using the Cleaning procedure applied in Stats Regular Table as a function of cleaning the Stats Playoffs Table
+
+```{r}
+data_cleaning<-function(stats){
+  colnames(stats)=paste(colnames(stats), stats[1,], sep="_" )# Combining the column names and first row to form the data set column names   
+  colnames(stats)=str_remove_all(colnames(stats), "^[_]")# Removing all the column names in the stats table beginning "_"
+  
+  ### Removing unnecessary Rows and Columns
+  stats=stats[!grepl("^.*[A-Z].*", stats$Date),]# removing Rows beginning with alphabets in Date Column 
+  stats=stats[,!grepl("^$", colnames(stats))]   # removing the column names with empty strings 
+  
+  dub_index<-grep(TRUE, duplicated(colnames(stats))) # checking on the duplicated column names
+  colnames(stats)[dub_index]=paste(colnames(stats)[dub_index], "2", sep="_") # Assigning them the second instance
+  colnames(stats)
+  
+  stats$GS=stats$GS %>% 
+    str_replace_all("[*]","Started") %>% # replacing the instances of "*" with the started the match 
+    str_replace_all("^$", "Played but not started") # replacing the instances of empty with played but not started
+  head(stats)
+  
+  GS_index<-grep("^GS$", colnames(stats))# determining the index number 
+  GS_index<-GS_index+1
+  for(i in GS_index:ncol(stats)){ 
+    stats[[i]][stats[[i]] %in% unique(stats$GS)]<- NA   # A loop to assign the columns after GS to with the string values present in GS to Zeros
+  }
+  return(stats)
+}
+
+```
+
+##### Stats Regular Table
+
+ - Calling the data cleaning function to clean the Stats Regular data set
+ - Making the Table dynamic by calling the DT package functionality
+
+```{r}
+Stats_regular<- data_cleaning(stats)#Cleaning the stats regular data table
+DT::datatable(Stats_regular)
+```
+
+##### Stats Playoffs Table
+
+ - Calling the data cleaning function to clean the Stats Playoffs Regular data set
+ - Making the Table dynamic by calling the DT package functionality
+
+```{r}
+Stats_playoffs<- data_cleaning(stats_playoffs) #cleaning the stats playoffs table
+DT::datatable(Stats_playoffs)
+```
+
+#### Determining the unique column names that are present in both datasets
+
+```{r}
+all_column_names<-c(colnames(Stats_regular), colnames(Stats_playoffs)) %>% 
+  unique()# Combining the unique column names
+all_column_names
+
+```
+#### Determining the missing column names that are present in Stats Regular table and absent in the Stats Playoffs table
+```{r}
+`%notin%`=Negate(`%in%`)
+
+not_in_headers<-all_column_names %notin% colnames(Stats_playoffs)
+missing_columns<-all_column_names[not_in_headers]
+missing_columns
+
+Stats_playoffs[,missing_columns]<-0
+```
+
+#### Ordering the the column names so as to combine the two datasets
+
+```{r}
+Stats_regular=Stats_regular[,all_column_names]
+Stats_playoffs=Stats_playoffs[,all_column_names]
+
+```
+
+#### Combining the two datasets to form one table for both Regular and Playoff Statistics
+```{r}
+Stats_Combined<-rbind(Stats_regular, Stats_playoffs) %>% 
+  arrange(Year)
+DT::datatable(Stats_Combined)
 ```
 
